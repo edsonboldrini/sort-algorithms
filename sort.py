@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import csv
 import time
+from multiprocessing import Process
 
 import math
 import sys
@@ -11,7 +12,7 @@ import sys
 Sort algorithms
 """
 
-def selectionsort(A, key):
+def selectsort(A, key):
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for i in range(len(A)):
             min = i
@@ -28,7 +29,7 @@ def selectionsort(A, key):
                     min = j
             A = swap(A, i, min)
 
-def insertionsort(A, key):
+def insertsort(A, key):
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for i in range(1, len(A)):
             current = A[i]
@@ -167,6 +168,9 @@ def maxHeapify(A, key, i, heapsize):
             swap(A, i, largest)
             maxHeapify(A, key, largest, heapsize)
 
+""" def introsortBridge(A):
+    maxDepth = math.floor(mathlen(A)) * 2 """
+
 """
 Utilities functions
 """
@@ -224,14 +228,16 @@ def swap(A, i, j):
 
 def sort(A, sortAlgorithm, key):
     algorithms = {
-        "selectsort": selectionsort,
-        "insertsort": insertionsort,
+        "selectsort": selectsort,
+        "insertsort": insertsort,
         "mergesort": mergesortBridge,
         "quicksort": quicksortBridge,
         "heapsort": heapsort,
     }
-    if (sortAlgorithm in algorithms):
+    if (sortAlgorithm in algorithms):        
         algorithms[sortAlgorithm](A, key)
+        # s = lambda sortAlgorithm, A, key : algorithms[sortAlgorithm](A, key)
+        # s(sortAlgorithm, A, key)        
         return True
     else:
         print("algorithm not recognized")
@@ -267,7 +273,7 @@ def main():
             if (ordered):
                 dataArray_to_csv(A, outputName, header) # Writing the csv file ordered by the key
                 print("{0} {1} {2}".format(sortAlgorithm, len(A)-1, (end - start)*1000)) # Report time
-                print_array(A) # Print the array        
+                # print_array(A) # Print the array        
         else:
             print("input file is not a valid .csv file")
     else:
@@ -275,4 +281,15 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # We create a Process
+    action_process = Process(target=main)
+    # We start the process and we block for 5 seconds.
+    action_process.start()
+    timeout = 5
+    action_process.join(timeout=timeout)    
+    # If thread is still active
+    if action_process.is_alive():
+        print("%d seconds timeout reached" % (timeout))
+        # Terminate
+        action_process.terminate()
+        action_process.join()    
