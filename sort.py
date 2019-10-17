@@ -11,8 +11,14 @@ import sys
 """
 Sort algorithms
 """
+counter = 0
+timeout = 5
 
 def selectsort(A, key):
+    start = time.time()
+    global counter
+    global timeout
+    
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for i in range(len(A)):
             min = i
@@ -20,6 +26,9 @@ def selectsort(A, key):
                 if (A[j][key].zfill(len(A[min][key])) < A[min][key].zfill(len(A[j][key]))):
                     min = j
             A = swap(A, i, min)
+            counter +=1            
+            if (time.time() - start >= timeout):
+                break
 
     else:
         for i in range(len(A)):
@@ -28,8 +37,15 @@ def selectsort(A, key):
                 if (A[j][key] < A[min][key]):
                     min = j
             A = swap(A, i, min)
+            counter +=1            
+            if (time.time() - start >= timeout):
+                break
 
 def insertsort(A, key):
+    start = time.time()
+    global timeout
+    global counter
+
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for i in range(1, len(A)):
             current = A[i]
@@ -38,6 +54,9 @@ def insertsort(A, key):
                 A[j+1] = A[j]
                 j -= 1
             A[j+1] = current
+            counter +=1            
+            if (time.time() - start >= timeout):
+                break
     else:
         for i in range(1, len(A)):
             current = A[i]
@@ -46,18 +65,27 @@ def insertsort(A, key):
                 A[j+1] = A[j]
                 j -= 1
             A[j+1] = current
+            counter +=1            
+            if (time.time() - start >= timeout):
+                break
 
 def mergesortBridge(A, key):
-    mergesort(A, key, 0, len(A)-1)
+    start = time.time()    
+    mergesort(A, key, start, 0, len(A)-1)
 
-def mergesort(A, key, p, r):
+def mergesort(A, key, start, p, r):
+    global timeout
+    global counter
     if (p < r):
-        q = math.floor((p+r)/2)
-        mergesort(A, key, p, q)
-        mergesort(A, key, q+1, r)
-        merge(A, key, p, q, r)
+        if ( not (time.time() - start >= timeout)):                
+            q = math.floor((p+r)/2)
+            mergesort(A, key, start, p, q)
+            mergesort(A, key, start, q+1, r)
+            merge(A, key, start, p, q, r)
 
-def merge(A, key, p, q, r):
+def merge(A, key, start, p, q, r):
+    global timeout
+    global counter
     L = A[p:q+1]
     R = A[q+1:r+1]
 
@@ -79,6 +107,9 @@ def merge(A, key, p, q, r):
                 else:
                     A[k] = L[i]
                     i += 1
+            counter +=1                     
+            if (time.time() - start >= timeout):
+                break
     else:
         for k in range(p, r+1):
             if (i < len(L) and j < len(R)):
@@ -95,17 +126,27 @@ def merge(A, key, p, q, r):
                 else:
                     A[k] = L[i]
                     i += 1
+            counter +=1               
+            if (time.time() - start >= timeout):
+                break
 
 def quicksortBridge(A, key):
-    quicksort(A, key, 0, len(A)-1)
+    start = time.time()
+    quicksort(A, key, start, 0, len(A)-1)
 
-def quicksort(A, key, p, r):
+def quicksort(A, key, start, p, r):
+    global timeout
+    global counter
     if (p < r):
-        q = partition(A, key, p, r)
-        quicksort(A, key, p, q-1)
-        quicksort(A, key, q+1, r)
+        print(time.time() - start)
+        if ( not (time.time() - start >= timeout)):    
+            q = partition(A, key, start, p, r)
+            quicksort(A, key, start, p, q-1)
+            quicksort(A, key, start, q+1, r)
 
-def partition(A, key, p, r):
+def partition(A, key, start, p, r):
+    global timeout
+    global counter
     current = A[r]
     i = p - 1
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
@@ -113,14 +154,22 @@ def partition(A, key, p, r):
             if (A[j][key].zfill(len(current[key])) <= current[key].zfill(len(A[j][key]))):
                 i = i + 1
                 swap(A, i, j)
+            counter +=1
+            if (time.time() - start >= timeout):
+                break
         swap(A, i+1, r)
+        counter +=1        
         return i + 1
     else:
         for j in range(p, r):
             if (A[j][key] <= current[key]):
                 i = i + 1
                 swap(A, i, j)
+            counter +=1
+            if (time.time() - start >= timeout):
+                break
         swap(A, i+1, r)
+        counter +=1                 
         return i + 1
 
 def heapsort(A, key):
@@ -167,9 +216,6 @@ def maxHeapify(A, key, i, heapsize):
         if(largest != i):
             swap(A, i, largest)
             maxHeapify(A, key, largest, heapsize)
-
-""" def introsortBridge(A):
-    maxDepth = math.floor(mathlen(A)) * 2 """
 
 """
 Utilities functions
@@ -272,7 +318,7 @@ def main():
 
             if (ordered):
                 dataArray_to_csv(A, outputName, header) # Writing the csv file ordered by the key
-                print("{0} {1} {2}".format(sortAlgorithm, len(A)-1, (end - start)*1000)) # Report time
+                print("{0} {1} {2}".format(sortAlgorithm, counter, (end - start)*1000)) # Report time
                 # print_array(A) # Print the array        
         else:
             print("input file is not a valid .csv file")
@@ -281,15 +327,16 @@ def main():
 
 
 if __name__ == "__main__":
-    # We create a Process
-    action_process = Process(target=main)
-    # We start the process and we block for 5 seconds.
-    action_process.start()
-    timeout = 5
-    action_process.join(timeout=timeout)    
-    # If thread is still active
-    if action_process.is_alive():
-        print("%d seconds timeout reached" % (timeout))
-        # Terminate
-        action_process.terminate()
-        action_process.join()    
+    main()
+    # # We create a Process
+    # action_process = Process(target=main)
+    # # We start the process and we block for 5 seconds.
+    # action_process.start()
+    # timeout = 5
+    # action_process.join(timeout=timeout)    
+    # # If thread is still active
+    # if action_process.is_alive():
+    #     print("%d seconds timeout reached" % (timeout))
+    #     # Terminate
+    #     action_process.terminate()
+    #     action_process.join()    
