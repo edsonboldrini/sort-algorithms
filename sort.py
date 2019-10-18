@@ -14,63 +14,69 @@ Sort algorithms
 counter = 0
 timeout = 5
 
-def selectsort(A, key):
-    start = time.time()
+def selectsort(A, key, start):
     global counter
     global timeout
     
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for i in range(len(A)):
+            if (time.time() - start >= timeout):
+                break
             min = i
             for j in range(i+1, len(A)):
+                if (time.time() - start >= timeout):
+                    break
                 if (A[j][key].zfill(len(A[min][key])) < A[min][key].zfill(len(A[j][key]))):
                     min = j
             A = swap(A, i, min)
             counter +=1            
-            if (time.time() - start >= timeout):
-                break
 
     else:
         for i in range(len(A)):
+            if (time.time() - start >= timeout):
+                break
             min = i
             for j in range(i+1, len(A)):
+                if (time.time() - start >= timeout):
+                    break
                 if (A[j][key] < A[min][key]):
                     min = j
             A = swap(A, i, min)
             counter +=1            
-            if (time.time() - start >= timeout):
-                break
 
-def insertsort(A, key):
-    start = time.time()
+def insertsort(A, key, start):
     global timeout
     global counter
 
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for i in range(1, len(A)):
+            if (time.time() - start >= timeout):
+                break
             current = A[i]
             j = i - 1
             while(j >= 0 and A[j][key].zfill(len(current[key])) > current[key].zfill(len(A[j][key]))):
+                if (time.time() - start >= timeout):
+                    break
                 A[j+1] = A[j]
                 j -= 1
             A[j+1] = current
             counter +=1            
-            if (time.time() - start >= timeout):
-                break
     else:
         for i in range(1, len(A)):
+            if (time.time() - start >= timeout):
+                break
             current = A[i]
             j = i - 1
             while(j >= 0 and A[j][key] > current[key]):
+                if (time.time() - start >= timeout):
+                    break
                 A[j+1] = A[j]
                 j -= 1
             A[j+1] = current
             counter +=1            
-            if (time.time() - start >= timeout):
-                break
 
-def mergesortBridge(A, key):
-    start = time.time()    
+def mergesortBridge(A, key, start):
+        
     mergesort(A, key, start, 0, len(A)-1)
 
 def mergesort(A, key, start, p, r):
@@ -79,9 +85,12 @@ def mergesort(A, key, start, p, r):
     if (p < r):
         if ( not (time.time() - start >= timeout)):                
             q = math.floor((p+r)/2)
-            mergesort(A, key, start, p, q)
-            mergesort(A, key, start, q+1, r)
-            merge(A, key, start, p, q, r)
+            if ( not (time.time() - start >= timeout)):
+                mergesort(A, key, start, p, q)
+            if ( not (time.time() - start >= timeout)):
+                mergesort(A, key, start, q+1, r)
+            if ( not (time.time() - start >= timeout)):
+                merge(A, key, start, p, q, r)
 
 def merge(A, key, start, p, q, r):
     global timeout
@@ -93,6 +102,8 @@ def merge(A, key, start, p, q, r):
     j = 0
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for k in range(p, r+1):
+            if (time.time() - start >= timeout):
+                break
             if (i < len(L) and j < len(R)):
                 if (L[i][key].zfill(len(R[j][key])) < R[j][key].zfill(len(L[i][key]))):
                     A[k] = L[i]
@@ -108,10 +119,10 @@ def merge(A, key, start, p, q, r):
                     A[k] = L[i]
                     i += 1
             counter +=1                     
-            if (time.time() - start >= timeout):
-                break
     else:
         for k in range(p, r+1):
+            if (time.time() - start >= timeout):
+                break
             if (i < len(L) and j < len(R)):
                 if (L[i][key] < R[j][key]):
                     A[k] = L[i]
@@ -127,18 +138,14 @@ def merge(A, key, start, p, q, r):
                     A[k] = L[i]
                     i += 1
             counter +=1               
-            if (time.time() - start >= timeout):
-                break
 
-def quicksortBridge(A, key):
-    start = time.time()
+def quicksortBridge(A, key, start):
     quicksort(A, key, start, 0, len(A)-1)
 
 def quicksort(A, key, start, p, r):
     global timeout
     global counter
-    if (p < r):
-        print(time.time() - start)
+    if (p < r):        
         if ( not (time.time() - start >= timeout)):    
             q = partition(A, key, start, p, r)
             quicksort(A, key, start, p, q-1)
@@ -172,17 +179,24 @@ def partition(A, key, start, p, r):
         counter +=1                 
         return i + 1
 
-def heapsort(A, key):
+def heapsort(A, key, start):
+    global timeout
+    global counter
     heapsize = len(A)
-    buildMaxHeap(A, key, heapsize)
+    buildMaxHeap(A, key, start, heapsize)
     for i in range(len(A)-1, 0, -1):
         swap(A, 0, i)
         heapsize -= 1
-        maxHeapify(A, key, 0, heapsize)
+        counter +=1
+        maxHeapify(A, key, start, 0, heapsize)
+        if (time.time() - start >= timeout):
+            break
 
-def buildMaxHeap(A, key, heapsize):
+def buildMaxHeap(A, key, start, heapsize):
     for i in range(math.floor(len(A)/2)-1, -1, -1):
-        maxHeapify(A, key, i, heapsize)
+        maxHeapify(A, key, start, i, heapsize)
+        if (time.time() - start >= timeout):
+            break
 
 def left(i):
     return 2 * i + 1
@@ -190,7 +204,7 @@ def left(i):
 def right(i):
     return 2 * i + 2
 
-def maxHeapify(A, key, i, heapsize):
+def maxHeapify(A, key, start, i, heapsize):
     l = left(i)
     r = right(i)
 
@@ -204,7 +218,8 @@ def maxHeapify(A, key, i, heapsize):
 
         if(largest != i):
             swap(A, i, largest)
-            maxHeapify(A, key, largest, heapsize)
+            if (not (time.time() - start >= timeout)):
+                maxHeapify(A, key, start, largest, heapsize)
     else:
         if(l <= heapsize-1 and A[l][key] > A[i][key]):
             largest = l
@@ -215,7 +230,8 @@ def maxHeapify(A, key, i, heapsize):
 
         if(largest != i):
             swap(A, i, largest)
-            maxHeapify(A, key, largest, heapsize)
+            if (not (time.time() - start >= timeout)):
+                maxHeapify(A, key, start, largest, heapsize)
 
 """
 Utilities functions
@@ -272,7 +288,7 @@ def swap(A, i, j):
     A[j] = aux
     return A
 
-def sort(A, sortAlgorithm, key):
+def sort(A, sortAlgorithm, key, start):
     algorithms = {
         "selectsort": selectsort,
         "insertsort": insertsort,
@@ -281,7 +297,7 @@ def sort(A, sortAlgorithm, key):
         "heapsort": heapsort,
     }
     if (sortAlgorithm in algorithms):        
-        algorithms[sortAlgorithm](A, key)
+        algorithms[sortAlgorithm](A, key, start)
         # s = lambda sortAlgorithm, A, key : algorithms[sortAlgorithm](A, key)
         # s(sortAlgorithm, A, key)        
         return True
@@ -313,7 +329,7 @@ def main():
             key = key_to_index(inputKey) # Getting the index column of the key
 
             start = time.time() # Starting time
-            ordered = sort(A, sortAlgorithm, key) # Ordenation step
+            ordered = sort(A, sortAlgorithm, key, start) # Ordenation step
             end = time.time() # Ending time
 
             if (ordered):
