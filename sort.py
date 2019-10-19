@@ -12,11 +12,11 @@ import sys
 Sort algorithms
 """
 counter = 0
-timeout = 5
+timeout = 30
 
 def selectsort(A, key, start):
     global counter
-    global timeout
+    counter = 0
     
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for i in range(len(A)):
@@ -44,9 +44,9 @@ def selectsort(A, key, start):
             A = swap(A, i, min)
             counter +=1            
 
-def insertsort(A, key, start):
-    global timeout
+def insertsort(A, key, start): 
     global counter
+    counter = 0    
 
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for i in range(1, len(A)):
@@ -73,15 +73,17 @@ def insertsort(A, key, start):
                 A[j+1] = A[j]
                 j -= 1
             A[j+1] = current
-            counter +=1            
+            counter +=1 
+
+    return A           
 
 def mergesortBridge(A, key, start):
         
     mergesort(A, key, start, 0, len(A)-1)
 
 def mergesort(A, key, start, p, r):
-    global timeout
     global counter
+    counter = 0
     if (p < r):
         if ( not (time.time() - start >= timeout)):                
             q = math.floor((p+r)/2)
@@ -93,10 +95,13 @@ def mergesort(A, key, start, p, r):
                 merge(A, key, start, p, q, r)
 
 def merge(A, key, start, p, q, r):
-    global timeout
     global counter
+    counter = 0
     L = A[p:q+1]
     R = A[q+1:r+1]
+
+    print_test(L, key)
+    print_test(R, key)
 
     i = 0
     j = 0
@@ -137,14 +142,15 @@ def merge(A, key, start, p, q, r):
                 else:
                     A[k] = L[i]
                     i += 1
-            counter +=1               
+            counter +=1
+    return A               
 
 def quicksortBridge(A, key, start):
     quicksort(A, key, start, 0, len(A)-1)
 
 def quicksort(A, key, start, p, r):
-    global timeout
     global counter
+    counter = 0
     if (p < r):        
         if ( not (time.time() - start >= timeout)):    
             q = partition(A, key, start, p, r)
@@ -152,8 +158,8 @@ def quicksort(A, key, start, p, r):
             quicksort(A, key, start, q+1, r)
 
 def partition(A, key, start, p, r):
-    global timeout
     global counter
+    counter = 0
     current = A[r]
     i = p - 1
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
@@ -180,8 +186,8 @@ def partition(A, key, start, p, r):
         return i + 1
 
 def heapsort(A, key, start):
-    global timeout
     global counter
+    counter = 0
     heapsize = len(A)
     buildMaxHeap(A, key, start, heapsize)
     for i in range(len(A)-1, 0, -1):
@@ -233,9 +239,38 @@ def maxHeapify(A, key, start, i, heapsize):
             if (not (time.time() - start >= timeout)):
                 maxHeapify(A, key, start, largest, heapsize)
 
+# def introsortBridge(A, key, start):
+#     maxdepth = math.floor(math.log(len(A))) * 2
+#     introsort(A, key, start, maxdepth)
+
+# def introsort(A, key, start, maxdepth):
+#     n = len(A)
+#     if (maxdepth == 0):
+#         heapsort(A, key, start)
+#     else:
+#         p = partition(A, key, start, 0, len(A))
+#         introsort(A[0:p+1], key, start, maxdepth - 1)
+#         introsort(A[p+1:n+1], key, start, maxdepth - 1)
+
+def timsort(A, key, start):
+    run = 5
+    for i in range(0, len(A), run):
+        A[i:i+run] = insertsort(A[i:i+run], key, start)
+    print_test(A, key)
+    runinc = run    
+    while runinc < len(A):        
+        for j in range(0, len(A), 2 * runinc):
+            A[j:j+2*runinc] = merge(A, key, start, j, runinc - 1, j + 2 * runinc - 1)
+        runinc *= 2
+        
+
 """
 Utilities functions
 """
+def print_test(A, key):
+    for i in range(len(A)):
+        print(A[i][key])
+    print("---")
 
 def csv_to_dataArray(inputName):
     filepath = Path(inputName)
@@ -295,6 +330,8 @@ def sort(A, sortAlgorithm, key, start):
         "mergesort": mergesortBridge,
         "quicksort": quicksortBridge,
         "heapsort": heapsort,
+        # "introsort": introsortBridge,
+        "timsort": timsort,
     }
     if (sortAlgorithm in algorithms):        
         algorithms[sortAlgorithm](A, key, start)
