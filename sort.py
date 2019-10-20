@@ -78,30 +78,20 @@ def insertsort(A, key, start):
     return A           
 
 def mergesortBridge(A, key, start):
-        
     mergesort(A, key, start, 0, len(A)-1)
 
 def mergesort(A, key, start, p, r):
-    global counter
-    counter = 0
-    if (p < r):
-        if ( not (time.time() - start >= timeout)):                
-            q = math.floor((p+r)/2)
-            if ( not (time.time() - start >= timeout)):
-                mergesort(A, key, start, p, q)
-            if ( not (time.time() - start >= timeout)):
-                mergesort(A, key, start, q+1, r)
-            if ( not (time.time() - start >= timeout)):
-                merge(A, key, start, p, q, r)
+    if (p < r):                     
+        q = math.floor((p+r)/2)
+        mergesort(A, key, start, p, q)
+        mergesort(A, key, start, q+1, r)
+        split(A, key, start, p, q, r)
 
-def merge(A, key, start, p, q, r):
+def split(A, key, start, p, q, r):
     global counter
     counter = 0
     L = A[p:q+1]
     R = A[q+1:r+1]
-
-    print_test(L, key)
-    print_test(R, key)
 
     i = 0
     j = 0
@@ -252,15 +242,76 @@ def maxHeapify(A, key, start, i, heapsize):
 #         introsort(A[0:p+1], key, start, maxdepth - 1)
 #         introsort(A[p+1:n+1], key, start, maxdepth - 1)
 
+
+def timMerge(L, R, key):
+    global counter
+    counter = 0
+    i = 0
+    j = 0
+    A = []
+    if (L[0][key].isnumeric() or L[-1][key].isnumeric() or R[0][key].isnumeric() or R[-1][key].isnumeric()):
+        while i < len(L) and j < len(R):
+            if (L[i][key].zfill(len(R[j][key])) < R[j][key].zfill(len(L[i][key]))):
+                A.append(L[i])
+                i += 1
+                counter +=1
+            elif (L[i][key].zfill(len(R[j][key])) > R[j][key].zfill(len(L[i][key]))):
+                A.append(R[j])
+                j += 1
+                counter +=1
+            else:
+                A.append(L[i])
+                A.append(R[j])
+                i += 1
+                j += 1
+                counter +=2
+
+        while i < len(L):
+            A.append(L[i])
+            i += 1
+            counter +=1
+
+        while j < len(R):
+            A.append(R[j])
+            j += 1
+            counter +=1
+    else:
+        while i < len(L) and j < len(R):
+            if (L[i][key] < R[j][key]):
+                A.append(L[i])
+                i += 1
+                counter +=1
+            elif (L[i][key] > R[j][key]):
+                A.append(R[j])
+                j += 1
+                counter +=1
+            else:
+                A.append(L[i])
+                A.append(R[j])
+                i += 1
+                j += 1
+                counter +=2
+
+        while i < len(L):
+            A.append(L[i])
+            i += 1
+            counter +=1
+
+        while j < len(R):
+            A.append(R[j])
+            j += 1
+            counter +=1
+
+    return A           
+
 def timsort(A, key, start):
-    run = 5
+    run = 3
     for i in range(0, len(A), run):
         A[i:i+run] = insertsort(A[i:i+run], key, start)
-    print_test(A, key)
     runinc = run    
     while runinc < len(A):        
-        for j in range(0, len(A), 2 * runinc):
-            A[j:j+2*runinc] = merge(A, key, start, j, runinc - 1, j + 2 * runinc - 1)
+        for j in range(0, len(A), 2 * runinc): 
+            A[j:j+2*runinc] = timMerge(A[j:j + runinc],A[j+runinc:j + 2 * runinc], key)
         runinc *= 2
         
 
@@ -380,16 +431,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    # # We create a Process
-    # action_process = Process(target=main)
-    # # We start the process and we block for 5 seconds.
-    # action_process.start()
-    # timeout = 5
-    # action_process.join(timeout=timeout)    
-    # # If thread is still active
-    # if action_process.is_alive():
-    #     print("%d seconds timeout reached" % (timeout))
-    #     # Terminate
-    #     action_process.terminate()
-    #     action_process.join()    
+    main()    
