@@ -92,47 +92,10 @@ def split(A, key, start, p, q, r):
     counter = 0
     L = A[p:q+1]
     R = A[q+1:r+1]
-
-    i = 0
-    j = 0
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
-        for k in range(p, r+1):
-            if (time.time() - start >= timeout):
-                break
-            if (i < len(L) and j < len(R)):
-                if (L[i][key].zfill(len(R[j][key])) < R[j][key].zfill(len(L[i][key]))):
-                    A[k] = L[i]
-                    i += 1
-                else:
-                    A[k] = R[j]
-                    j += 1
-            else:
-                if (i == len(L)):
-                    A[k] = R[j]
-                    j += 1
-                else:
-                    A[k] = L[i]
-                    i += 1
-            counter +=1                     
+        A[p:r+1] = mergeNumeric(L,R,key)
     else:
-        for k in range(p, r+1):
-            if (time.time() - start >= timeout):
-                break
-            if (i < len(L) and j < len(R)):
-                if (L[i][key] < R[j][key]):
-                    A[k] = L[i]
-                    i += 1
-                else:
-                    A[k] = R[j]
-                    j += 1
-            else:
-                if (i == len(L)):
-                    A[k] = R[j]
-                    j += 1
-                else:
-                    A[k] = L[i]
-                    i += 1
-            counter +=1
+        A[p:r+1] = mergeString(L,R,key)
     return A               
 
 def quicksortBridge(A, key, start):
@@ -243,76 +206,91 @@ def maxHeapify(A, key, start, i, heapsize):
 #         introsort(A[p+1:n+1], key, start, maxdepth - 1)
 
 
-def timMerge(L, R, key):
+def mergeNumeric(L, R, key):
     global counter
     counter = 0
     i = 0
     j = 0
     A = []
-    if (L[0][key].isnumeric() or L[-1][key].isnumeric() or R[0][key].isnumeric() or R[-1][key].isnumeric()):
-        while i < len(L) and j < len(R):
-            if (L[i][key].zfill(len(R[j][key])) < R[j][key].zfill(len(L[i][key]))):
-                A.append(L[i])
-                i += 1
-                counter +=1
-            elif (L[i][key].zfill(len(R[j][key])) > R[j][key].zfill(len(L[i][key]))):
-                A.append(R[j])
-                j += 1
-                counter +=1
-            else:
-                A.append(L[i])
-                A.append(R[j])
-                i += 1
-                j += 1
-                counter +=2
 
-        while i < len(L):
+    while i < len(L) and j < len(R):
+        if (L[i][key].zfill(len(R[j][key])) < R[j][key].zfill(len(L[i][key]))):
             A.append(L[i])
             i += 1
             counter +=1
-
-        while j < len(R):
+        elif (L[i][key].zfill(len(R[j][key])) > R[j][key].zfill(len(L[i][key]))):
             A.append(R[j])
             j += 1
             counter +=1
-    else:
-        while i < len(L) and j < len(R):
-            if (L[i][key] < R[j][key]):
-                A.append(L[i])
-                i += 1
-                counter +=1
-            elif (L[i][key] > R[j][key]):
-                A.append(R[j])
-                j += 1
-                counter +=1
-            else:
-                A.append(L[i])
-                A.append(R[j])
-                i += 1
-                j += 1
-                counter +=2
+        else:
+            A.append(L[i])
+            A.append(R[j])
+            i += 1
+            j += 1
+            counter +=2
 
-        while i < len(L):
+    while i < len(L):
+        A.append(L[i])
+        i += 1
+        counter +=1
+
+    while j < len(R):
+        A.append(R[j])
+        j += 1
+        counter +=1
+
+    return A        
+
+def mergeString(L, R, key):
+    global counter
+    counter = 0
+    i = 0
+    j = 0
+    A = []
+    while i < len(L) and j < len(R):
+        if (L[i][key] < R[j][key]):
             A.append(L[i])
             i += 1
             counter +=1
-
-        while j < len(R):
+        elif (L[i][key] > R[j][key]):
             A.append(R[j])
             j += 1
             counter +=1
+        else:
+            A.append(L[i])
+            A.append(R[j])
+            i += 1
+            j += 1
+            counter +=2
 
-    return A           
+    while i < len(L):
+        A.append(L[i])
+        i += 1
+        counter +=1
+
+    while j < len(R):
+        A.append(R[j])
+        j += 1
+        counter +=1
+
+    return A
+   
 
 def timsort(A, key, start):
-    run = 3
+    run = 5
     for i in range(0, len(A), run):
         A[i:i+run] = insertsort(A[i:i+run], key, start)
     runinc = run    
-    while runinc < len(A):        
-        for j in range(0, len(A), 2 * runinc): 
-            A[j:j+2*runinc] = timMerge(A[j:j + runinc],A[j+runinc:j + 2 * runinc], key)
-        runinc *= 2
+    if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
+        while runinc < len(A):        
+            for j in range(0, len(A), 2 * runinc): 
+                A[j:j+2*runinc] = mergeNumeric(A[j:j + runinc],A[j+runinc:j + 2 * runinc], key)
+            runinc *= 2
+    else:
+        while runinc < len(A):        
+            for j in range(0, len(A), 2 * runinc): 
+                A[j:j+2*runinc] = mergeString(A[j:j + runinc],A[j+runinc:j + 2 * runinc], key)
+            runinc *= 2
         
 
 """
