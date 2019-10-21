@@ -58,10 +58,12 @@ def insertsort(A, key):
                 j -= 1
             A[j+1] = current
             counter +=1 
-
+    counter +=1 
     return A           
 
 def mergesortBridge(A, key):
+    global counter 
+    counter = 0
     mergesort(A, key, 0, len(A)-1)
 
 def mergesort(A, key, p, r):
@@ -81,11 +83,11 @@ def merge(A, key, p, q, r):
     return A               
 
 def quicksortBridge(A, key):
+    global counter
+    counter = 0
     quicksort(A, key, 0, len(A)-1)
 
 def quicksort(A, key, p, r):
-    global counter
-    counter = 0
     if (p < r):                    
         q = partition(A, key, p, r)
         quicksort(A, key, p, q-1)
@@ -93,7 +95,6 @@ def quicksort(A, key, p, r):
 
 def partition(A, key, p, r):
     global counter
-    counter = 0
     current = A[r]
     i = p - 1
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
@@ -121,8 +122,9 @@ def heapsort(A, key):
     for i in range(len(A)-1, 0, -1):
         swap(A, 0, i)
         heapsize -= 1
-        counter +=1
+        counter +=1    
         maxHeapify(A, key, 0, heapsize)        
+    counter +=1
 
 def buildMaxHeap(A, key, heapsize):
     for i in range(math.floor(len(A)/2)-1, -1, -1):
@@ -162,23 +164,27 @@ def maxHeapify(A, key, i, heapsize):
             maxHeapify(A, key, largest, heapsize)
 
 def introsortBridge(A, key):
-    maxdepth = 2 * math.floor(math.log2(len(A)-1))
-    introsort(A, key, maxdepth)
+    global counter
+    counter = 0
+    maxdepth = 2 * math.floor(math.log2(len(A)-1 - 0))
+    introsort(A, key, 0, len(A)-1, maxdepth)
 
-def introsort(A, key, maxdepth):
-    n = len(A)-1
-    print(maxdepth)
+def introsort(A, key, p, r, maxdepth):
+    n = p - r
+    if n < 16:
+        insertsort(A, key)
+        return
     if maxdepth == 0: 
-        heapsort(A, key) 
-    else:
-        p = partition(A, key, 0, len(A)-1)        
-        introsort(A[0:p+1], key, maxdepth - 1) 
-        introsort(A[p+1:n+1], key, maxdepth - 1) 
+        heapsort(A, key)
+        return 
+    else:        
+        pp = partition(A, key, p, r)
+        introsort(A, key, p, pp-1, maxdepth - 1)
+        introsort(A, key, pp+1, r, maxdepth - 1)
 
 
 def mergeNumeric(L, R, key):
     global counter
-    counter = 0
     i = 0
     j = 0
     A = []
@@ -213,7 +219,6 @@ def mergeNumeric(L, R, key):
 
 def mergeString(L, R, key):
     global counter
-    counter = 0
     i = 0
     j = 0
     A = []
@@ -247,7 +252,9 @@ def mergeString(L, R, key):
    
 
 def timsort(A, key):
-    run = 5
+    global counter
+    counter = 0
+    run = 64
     for i in range(0, len(A), run):
         A[i:i+run] = insertsort(A[i:i+run], key)
     runinc = run    
@@ -266,6 +273,7 @@ def timsort(A, key):
 """
 Utilities functions
 """
+
 def print_test(A, key):
     for i in range(len(A)):
         print(A[i][key])
