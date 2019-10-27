@@ -14,54 +14,60 @@ Sort algorithms
 counter = 0
 timeout = 30
 
-def selectsort(A, key):
+def selectsortWrapper(A, key):
+    selectsort(A, key, 0, len(A))
+
+def selectsort(A, key, p, r):
     global counter
     counter = 0
     
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
-        for i in range(len(A)):            
+        for i in range(p, r):            
             min = i
-            for j in range(i+1, len(A)):
-                if (A[j][key].zfill(len(A[min][key])) < A[min][key].zfill(len(A[j][key]))):
+            for j in range(i+1, r):
+                if (int(A[j][key]) < int(A[min][key])):
                     min = j
             A = swap(A, i, min)
             counter +=1            
 
     else:
-        for i in range(len(A)):            
+        for i in range(r):            
             min = i
-            for j in range(i+1, len(A)):
+            for j in range(i+1, r):
                 if (A[j][key] < A[min][key]):
                     min = j
             A = swap(A, i, min)
-            counter +=1            
+            counter +=1
+    return A    
 
-def insertsort(A, key): 
+def insertsortWrapper(A, key):
+    insertsort(A, key, 0, len(A))
+
+def insertsort(A, key, p, r): 
     global counter
     counter = 0    
-
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
-        for i in range(1, len(A)):            
+        for i in range(p+1, r):            
             current = A[i]
             j = i - 1
-            while(j >= 0 and A[j][key].zfill(len(current[key])) > current[key].zfill(len(A[j][key]))):
+            while(j >= p and int(A[j][key]) > int(current[key])):
                 A[j+1] = A[j]
                 j -= 1
             A[j+1] = current
             counter +=1            
     else:
-        for i in range(1, len(A)):
-            current = A[i]
+        for i in range(p+1, r):
+            current = A[i]            
             j = i - 1
-            while(j >= 0 and A[j][key] > current[key]):                
+            while(j >= p and A[j][key] > current[key]):                
                 A[j+1] = A[j]
                 j -= 1
             A[j+1] = current
             counter +=1 
-    counter +=1 
-    return A           
+    counter +=1    
+    return A[p:r]
 
-def mergesortBridge(A, key):
+def mergesortWrapper(A, key):
     global counter 
     counter = 0
     mergesort(A, key, 0, len(A)-1)
@@ -82,7 +88,7 @@ def merge(A, key, p, q, r):
         A[p:r+1] = mergeString(L,R,key)
     return A               
 
-def quicksortBridge(A, key):
+def quicksortWrapper(A, key):
     global counter
     counter = 0
     quicksort(A, key, 0, len(A)-1)
@@ -99,7 +105,7 @@ def partition(A, key, p, r):
     i = p - 1
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
         for j in range(p, r):
-            if (A[j][key].zfill(len(current[key])) <= current[key].zfill(len(A[j][key]))):
+            if (int(A[j][key]) <= int(current[key])):
                 i = i + 1
                 swap(A, i, j)                       
         swap(A, i+1, r)
@@ -114,12 +120,15 @@ def partition(A, key, p, r):
         counter +=1                 
         return i + 1
 
-def heapsort(A, key):
+def heapsortWrapper(A, key):
+    heapsort(A, key, 0, len(A))
+
+def heapsort(A, key, p, r):
     global counter
     counter = 0
-    heapsize = len(A)
+    heapsize = r
     buildMaxHeap(A, key, heapsize)
-    for i in range(len(A)-1, 0, -1):
+    for i in range(r-1, 0, -1):
         swap(A, 0, i)
         heapsize -= 1
         counter +=1    
@@ -141,11 +150,11 @@ def maxHeapify(A, key, i, heapsize):
     r = right(i)
 
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
-        if(l <= heapsize-1 and A[l][key].zfill(len(A[i][key])) > A[i][key].zfill(len(A[l][key]))):
+        if(l <= heapsize-1 and int(A[l][key]) > int(A[i][key])):
             largest = l
         else:
             largest = i
-        if(r <= heapsize-1 and A[r][key].zfill(len(A[largest][key])) > A[largest][key].zfill(len(A[r][key]))):
+        if(r <= heapsize-1 and int(A[r][key]) > int(A[largest][key])):
             largest = r
 
         if(largest != i):
@@ -163,19 +172,19 @@ def maxHeapify(A, key, i, heapsize):
             swap(A, i, largest)            
             maxHeapify(A, key, largest, heapsize)
 
-def introsortBridge(A, key):
+def introsortWrapper(A, key):
     global counter
     counter = 0
     maxdepth = 2 * math.floor(math.log2(len(A)-1 - 0))
     introsort(A, key, 0, len(A)-1, maxdepth)
 
 def introsort(A, key, p, r, maxdepth):
-    n = p - r
-    if n < 16:
-        insertsort(A, key)
+    n = r - p
+    if n <= 16:
+        insertsort(A, key, p, r+1)
         return
     if maxdepth == 0: 
-        heapsort(A, key)
+        heapsort(A, key, p, r)
         return 
     else:        
         pp = partition(A, key, p, r)
@@ -190,11 +199,11 @@ def mergeNumeric(L, R, key):
     A = []
 
     while i < len(L) and j < len(R):
-        if (L[i][key].zfill(len(R[j][key])) < R[j][key].zfill(len(L[i][key]))):
+        if (int(L[i][key]) < int(R[j][key])):
             A.append(L[i])
             i += 1
             counter +=1
-        elif (L[i][key].zfill(len(R[j][key])) > R[j][key].zfill(len(L[i][key]))):
+        elif (int(L[i][key]) > int(R[j][key])):
             A.append(R[j])
             j += 1
             counter +=1
@@ -249,23 +258,26 @@ def mergeString(L, R, key):
         counter +=1
 
     return A
-   
 
-def timsort(A, key):
+
+def timsortWrapper(A, key):
+    timsort(A, key, 0, len(A))
+
+def timsort(A, key, p, r):
     global counter
     counter = 0
-    run = 64
-    for i in range(0, len(A), run):
-        A[i:i+run] = insertsort(A[i:i+run], key)
+    run = 32
+    for i in range(p, r, run):               
+        A[i:i+run] = insertsort(A, key, i, min(i+run, r))        
     runinc = run    
     if (A[0][key].isnumeric() and A[-1][key].isnumeric()):
-        while runinc < len(A):        
-            for j in range(0, len(A), 2 * runinc): 
+        while runinc < r:        
+            for j in range(0, r, 2 * runinc): 
                 A[j:j+2*runinc] = mergeNumeric(A[j:j + runinc],A[j+runinc:j + 2 * runinc], key)
             runinc *= 2
     else:
-        while runinc < len(A):        
-            for j in range(0, len(A), 2 * runinc): 
+        while runinc < r:        
+            for j in range(0, r, 2 * runinc): 
                 A[j:j+2*runinc] = mergeString(A[j:j + runinc],A[j+runinc:j + 2 * runinc], key)
             runinc *= 2
         
@@ -332,16 +344,15 @@ def swap(A, i, j):
 
 def sort(A, sortAlgorithm, key):
     algorithms = {
-        "selectsort": selectsort,
-        "insertsort": insertsort,
-        "mergesort": mergesortBridge,
-        "quicksort": quicksortBridge,
-        "heapsort": heapsort,
-        "introsort": introsortBridge,
-        "timsort": timsort,
+        "selectsort": selectsortWrapper,
+        "insertsort": insertsortWrapper,
+        "mergesort": mergesortWrapper,
+        "quicksort": quicksortWrapper,
+        "heapsort": heapsortWrapper,
+        "introsort": introsortWrapper,
+        "timsort": timsortWrapper,
     }
     if (sortAlgorithm in algorithms):        
-        # algorithms[sortAlgorithm](A, key)
         s = lambda sortAlgorithm, A, key : algorithms[sortAlgorithm](A, key)
         s(sortAlgorithm, A, key)        
         return True
